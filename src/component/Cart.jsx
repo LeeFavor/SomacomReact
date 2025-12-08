@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Input, Table, Alert } from 'reactstrap';
+import { useNavigate } from 'react-router-dom';
 import { myAxios, imageUrl } from './config';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { tokenAtom, userAtom } from '../atoms';
@@ -12,6 +13,7 @@ export default function Cart() {
     // UI 상에서만 변경되는 수량을 임시 저장하는 상태
     const [quantityChanges, setQuantityChanges] = useState({}); // { cartItemId: newQuantity }
     const user = useAtomValue(userAtom);
+    const navigate = useNavigate();
 
     const fetchCart = () => {
         if (!token) return;
@@ -88,17 +90,39 @@ export default function Cart() {
             });
     };
 
+    const handleOrder = () => {
+        const itemsToOrder = cart.items
+            .filter(item => checkedItems.has(item.cartItemId))
+            .map(item => ({
+                cartItemId: item.cartItemId, // Order.jsx에서 사용하기 위해 추가
+                productId: item.productId,
+                productName: item.productName,
+                price: item.price,
+                imageUrl: item.imageUrl,
+                quantity: quantityChanges[item.cartItemId] ?? item.quantity,
+            }));
+
+        if (itemsToOrder.length === 0) {
+            alert("주문할 상품을 선택해주세요.");
+            return;
+        }
+
+        const totalPrice = itemsToOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        navigate('/order', { state: { items: itemsToOrder, price: totalPrice, type: 'cart' } });
+    };
+
     if (!token || !user.username) return <Container className='mt-4'><Alert color="warning">장바구니를 보려면 로그인이 필요합니다.</Alert></Container>;
     if (!cart) return <Container className='mt-4'><div>장바구니 정보를 불러오는 중입니다...</div></Container>;
 
-    const compatibilityColor = { SUCCESS: 'success', WARN: 'warning', FAIL: 'danger', EMPTY: 'info' }[cart.compatibilityResult?.status || 'EMPTY'];
+    const compatibilityColor = { SUCCESS: 'success', WARN: 'warning', FAIL: 'danger', EMPTY: 'info' }[cart.compatibilityStatus || 'EMPTY'];
 
     return (
         <Container className='mt-4'>
             <h2 className='mb-4'>가상 견적 (장바구니)</h2>
             <Alert color={compatibilityColor}>
-                <h4 className='alert-heading'>{cart.compatibilityResult?.status}</h4>
-                {cart.compatibilityResult?.messages?.map((msg, i) => <p key={i} className='mb-0'>{msg}</p>)}
+                <h4 className='alert-heading'>{cart.compatibilityStatus}</h4>
+                {cart.compatibilityReasonCode}
             </Alert>
             <Table>
                 <thead>
@@ -108,12 +132,12 @@ export default function Cart() {
                     {cart.items.map(item => ( // api.md: cartItems -> items
                         <tr key={item.cartItemId}>
                             <td><Input type="checkbox" checked={checkedItems.has(item.cartItemId)} onChange={() => handleCheckChange(item.cartItemId)} /></td>
-                            <td><img src={`${imageUrl}${item.product.imageUrl}`} alt={item.product.productName} style={{ width: '100px', height: '100px' }} /></td>
-                            <td>{item.product.productName}</td>
-                            <td>${item.product.price.toLocaleString()}</td>
+                            <td><img src={`${imageUrl}${item.imageUrl}`} alt={item.productName} style={{ width: '100px', height: '100px' }} /></td>
+                            <td>{item.productName}</td>
+                            <td>${item.price.toLocaleString()}</td>
                             {/* 임시 수량 상태(quantityChanges) 또는 원래 수량(item.quantity)을 표시 */}
                             <td><Input type="number" value={quantityChanges[item.cartItemId] ?? item.quantity} onChange={(e) => handleQuantityChange(item.cartItemId, e.target.value)} style={{ width: '80px' }} min="1" /></td>
-                            <td>${(item.product.price * (quantityChanges[item.cartItemId] ?? item.quantity)).toLocaleString()}</td>
+                            <td>${(item.price * (quantityChanges[item.cartItemId] ?? item.quantity)).toLocaleString()}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -125,7 +149,7 @@ export default function Cart() {
                 </Col>
                 <Col className='text-end'>
                     <h3>총 견적 금액: <span className='text-primary fw-bold'>${cart.totalPrice?.toLocaleString()}</span></h3>
-                    <Button color="primary" size="lg">선택 상품 주문하기</Button>
+                    <Button color="primary" size="lg" onClick={handleOrder}>선택 상품 주문하기</Button>
                 </Col>
             </Row>
         </Container>

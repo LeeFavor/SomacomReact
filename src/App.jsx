@@ -10,7 +10,11 @@ import Join from './component/Join'
 import JoinSeller from './component/JoinSeller'
 import ProductDetail from './component/ProductDetail'
 import Cart from './component/Cart'
+import Search from './component/Search'
+import Mypage from './component/Mypage'
 import Token from './component/Token'
+import Order from './component/Order'
+import OrderComplete from './component/OrderComplete'
 import { fcmTokenAtom, alarmsAtom } from './atoms'
 import { useSetAtom, useAtom } from 'jotai/react'
 import { useState, useEffect } from 'react'
@@ -37,6 +41,10 @@ function App() {
         {/* 상품 및 장바구니 라우트 */}
         <Route path="/products/:id" element={<ProductDetail/>}/>
         <Route path="/cart" element={<Cart/>}/>
+        <Route path="/order-complete/:orderId" element={<OrderComplete/>}/>
+        <Route path="/order" element={<Order/>}/>
+        <Route path="/search" element={<Search/>}/>
+        <Route path="/mypage" element={<Mypage/>}/>
         <Route path='/token' element={<Token/>}/>
       </Routes>
     </>

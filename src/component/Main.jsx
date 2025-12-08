@@ -28,7 +28,7 @@ const AdProductCard = ({ product }) => (
       <Card className='h-100' style={{backgroundColor: '#fffbeb', borderColor: '#fde68a'}}>
         <CardBody className='d-flex flex-column justify-content-center align-items-center text-center'>
             <h5 style={{color: '#b45309'}}>✨ 회원님을 위한 맞춤 광고</h5>
-            <a href={`/products/${product.id}`} className='text-decoration-none text-dark w-100 mt-2'>
+            <a href={`/products/${product.productId}`} className='text-decoration-none text-dark w-100 mt-2'>
                 <Card className='w-100'>
                     <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{height: '150px', objectFit: 'cover'}}/>
                     <CardBody className='p-2'>
@@ -61,10 +61,10 @@ export default function Main() {
       })
       .catch(err => console.error("인기 상품 조회 실패:", err));
 
-    // 2. 카테고리 목록 조회
-    myAxios(token, setToken).get('/products/categories')
-      .then(res => setCategories(res.data))
-      .catch(err => console.error("카테고리 조회 실패:", err));
+    // // 2. 카테고리 목록 조회
+    // myAxios(token, setToken).get('/products/categories')
+    //   .then(res => setCategories(res.data))
+    //   .catch(err => console.error("카테고리 조회 실패:", err));
 
     
     // 3. AI 추천 상품 조회 (로그인 상태일 때만)
@@ -73,10 +73,13 @@ export default function Main() {
         try {
           // AI 개인화 추천 1개
           const personalRecPromise = myAxios(token, setToken).get('/recommendations/personal', { params: { count: 1 } });
+          console.log("111", personalRecPromise)
           // 장바구니 호환성 기반 추천 3개
           const compatRecPromise = myAxios(token, setToken).get('/products/search', { params: { compatFilter: true, size: 3 } });
+          console.log(compatRecPromise)
 
           const [personalRes, compatRes] = await Promise.all([personalRecPromise, compatRecPromise]);
+          // console.log(personalRes, compatRes)
 
           // AI 추천 상품 데이터 가공 (isAd 플래그 추가)
           const personalProducts = personalRes.data.map(item => ({ ...item.product, isAd: true }));
@@ -84,7 +87,7 @@ export default function Main() {
 
           // 두 결과를 합쳐서 상태 업데이트
           setRecommendedProducts([...personalProducts, ...compatProducts]);
-
+          console.log("111",recommendedProducts)
         } catch (error) {
           console.error("AI 추천 상품 조회 실패:", error);
         }
@@ -115,9 +118,11 @@ export default function Main() {
         <Col>
             <h4 style={{borderBottom: '2px solid #e5e7eb', paddingBottom: '10px'}}>카테고리</h4>
             <Nav>
-                {categories.map(cat => (
-                  <NavItem key={cat}><NavLink href={`/search?category=${cat}`} onClick={(e) => handleCategoryClick(e, cat)} className='btn btn-secondary me-2'>{cat}</NavLink></NavItem>
-                ))}
+                
+                <NavItem key="Motherboard"><NavLink href={`/search?category=Motherboard`} onClick={(e) => handleCategoryClick(e, "Motherboard")} className='btn btn-secondary me-2'>Motherboard</NavLink></NavItem>
+                <NavItem key="CPU"><NavLink href={`/search?category=CPU`} onClick={(e) => handleCategoryClick(e, "CPU")} className='btn btn-secondary me-2'>CPU</NavLink></NavItem>
+                <NavItem key="GPU"><NavLink href={`/search?category=GPU`} onClick={(e) => handleCategoryClick(e, "GPU")} className='btn btn-secondary me-2'>GPU</NavLink></NavItem>
+                <NavItem key="RAM"><NavLink href={`/search?category=RAM`} onClick={(e) => handleCategoryClick(e, "RAM")} className='btn btn-secondary me-2'>RAM</NavLink></NavItem>
             </Nav>
         </Col>
       </Row>
@@ -142,6 +147,7 @@ export default function Main() {
         {recommendedProducts.map(p =>
             p.isAd ? <AdProductCard key={p.productId} product={p} /> : <ProductCard key={p.productId} product={p} />
         )}
+
       </Row>
     </Container>
   );
