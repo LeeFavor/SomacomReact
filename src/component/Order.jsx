@@ -5,6 +5,9 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom, tokenAtom } from '../atoms';
 import { myAxios, imageUrl } from './config';
 
+// 토스페이먼츠 테스트용 클라이언트 키
+const clientKey = 'test_ck_Z61JOxRQVEab6wPpyJl0VW0X9bAq';
+
 export default function Order() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -61,7 +64,7 @@ export default function Order() {
         }).open();
     };
 
-    const handlePayment = (e) => {
+    const handlePayment = async (e) => {
         e.preventDefault();
 
         if (!shippingInfo.recipientName || !shippingInfo.shippingAddress || !shippingInfo.shippingPostcode) {
@@ -72,46 +75,43 @@ export default function Order() {
         // 주소와 상세주소를 합쳐서 최종 배송지 주소 생성
         const fullShippingAddress = `${shippingInfo.shippingAddress} ${shippingInfo.detailAddress}`;
 
-        if (orderType === 'instant') {
-            // 즉시 구매 API 호출
-            const instantOrderRequest = {
+        const orderRequest = orderType === 'instant'
+            ? { // 즉시 구매 요청 본문
                 productId: orderItems[0].productId,
                 quantity: orderItems[0].quantity,
                 recipientName: shippingInfo.recipientName,
                 shippingAddress: fullShippingAddress,
                 shippingPostcode: shippingInfo.shippingPostcode,
-            };
-
-            myAxios(token, setToken).post('/orders/instant', instantOrderRequest)
-                .then(res => {
-                    const orderId = res.data;
-                    alert("결제가 완료되었습니다.");
-                    navigate(`/order-complete/${orderId}`);
-                })
-                .catch(err => {
-                    console.error("즉시 구매 주문 생성 실패:", err);
-                    alert(err.response?.data?.message || "주문 처리 중 오류가 발생했습니다.");
-                });
-        } else {
-            // 장바구니 구매 API 호출
-            // 1. 서버에 어떤 상품을 주문할지 먼저 전송 (선택 기능)
-            const selectedCartItemIds = orderItems.map(item => item.cartItemId);
-            const cartOrderRequest = {
-                cartItemIds: selectedCartItemIds,
+            }
+            : { // 장바구니 구매 요청 본문
+                cartItemIds: orderItems.map(item => item.cartItemId),
                 recipientName: shippingInfo.recipientName,
                 shippingAddress: fullShippingAddress,
                 shippingPostcode: shippingInfo.shippingPostcode,
             };
-            myAxios(token, setToken).post('/orders', cartOrderRequest)
-                .then(res => {
-                    const orderId = res.data;
-                    alert("결제가 완료되었습니다.");
-                    navigate(`/order-complete/${orderId}`);
-                })
-                .catch(err => {
-                    console.error("장바구니 주문 생성 실패:", err);
-                    alert(err.response?.data?.message || "주문 처리 중 오류가 발생했습니다.");
-                });
+
+        const orderUrl = orderType === 'instant' ? '/orders/instant' : '/orders';
+
+        try {
+            // 1. 백엔드에 '결제 대기(PENDING)' 상태의 주문 생성 요청
+            const response = await myAxios(token, setToken).post(orderUrl, orderRequest);
+            const paymentOrderId = response.data; // 백엔드에서 생성한 고유 주문 ID
+
+            // 2. 토스페이먼츠 일반 결제창 호출
+            const tossPayments = window.TossPayments(clientKey);
+            await tossPayments.requestPayment('카드', { // '카드' 이외에 다른 결제수단도 가능
+                orderId: paymentOrderId,
+                orderName: orderItems.length > 1 ? `${orderItems[0].productName} 외 ${orderItems.length - 1}건` : orderItems[0].productName,
+                amount: Math.round(totalPrice),
+                successUrl: `${window.location.origin}/payment-success`, // 결제 성공 시 리디렉션될 URL
+                failUrl: `${window.location.origin}/payment-fail`,       // 결제 실패 시 리디렉션될 URL
+                customerName: user.username,
+                customerEmail: user.email,
+            });
+
+        } catch (err) {
+            console.error("주문 생성 또는 결제 요청 실패:", err);
+            alert(err.response?.data?.message || "주문 처리 중 오류가 발생했습니다.");
         }
     };
 
@@ -169,9 +169,8 @@ export default function Order() {
 
                 <section id="payment-method" className='mb-5'>
                     <h3>결제 수단</h3>
-                    <Card body className='text-center p-5 bg-light'>
-                        <p>[카카오페이 / 토스 등 간편 결제 API 연동 영역]</p>
-                    </Card>
+                    {/* 일반 결제 방식에서는 별도의 UI 렌더링 영역이 필요 없습니다. */}
+                    <Card body>결제하기 버튼을 누르면 토스페이먼츠 결제창이 뜹니다.</Card>
                 </section>
 
                 <Button type="submit" color="primary" block style={{ padding: '15px', fontSize: '1.2em' }}>
