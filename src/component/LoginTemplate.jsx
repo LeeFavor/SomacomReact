@@ -28,7 +28,13 @@ export default function LoginTemplate({ title, role }) {
                 // 백엔드 응답: { role: "SELLER" }, 프론트엔드 기대값: "ROLE_SELLER"
                 if (res.data && res.data.role && role === `ROLE_${res.data.role}`) {
                     setUser(res.data);
-                    navigate("/");
+                    // [수정] 역할에 따른 리디렉션
+                    if (role === 'ROLE_ADMIN') {
+                        navigate("/admin");
+                    } else if (role === 'ROLE_SELLER') {
+                        // TODO: 판매자 센터 구현 시 경로 수정 필요
+                        navigate("/seller-center"); 
+                    }
                 } else {
                     alert(`'${role.replace('ROLE_', '')}' 권한이 없거나, 로그인 정보가 잘못되었습니다.`);
                 }

@@ -56,6 +56,7 @@ export default function Search() {
         if (category) {
             myAxios(token, setToken).get('/products/filters', { params: { category } })
                 .then(res => setDynamicFilters(res.data))
+                .then(console.log("aaa",dynamicFilters))
                 .catch(err => {
                     console.error("동적 필터 조회 실패:", err);
                     setDynamicFilters({});

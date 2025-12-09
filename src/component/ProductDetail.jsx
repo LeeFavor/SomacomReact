@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, CardImg, CardBody, Button, Input, Table, ListGroup, ListGroupItem, Alert } from 'reactstrap';
+import { Container, Row, Col, Card, CardImg, CardBody, Button, Input, Table, ListGroup, ListGroupItem, Modal, ModalBody, ModalHeader } from 'reactstrap';
 import { myAxios, imageUrl } from './config';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { tokenAtom } from '../atoms';
@@ -41,6 +41,8 @@ export default function ProductDetail() {
     const [recommendations, setRecommendations] = useState([]);
     const [quantity, setQuantity] = useState(1);
     const token = useAtomValue(tokenAtom);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const longViewLogged = useRef(false); // 15초 체류 로그가 전송되었는지 추적
     const setToken = useSetAtom(tokenAtom);
 
     useEffect(() => {
@@ -63,6 +65,7 @@ export default function ProductDetail() {
                         name: apiResponse.companyName,
                     },
                     baseSpec: {
+                        baseSpecId: apiResponse.baseSpecId, // baseSpecId 추가
                         name: apiResponse.baseSpecName,
                         manufacturer: apiResponse.manufacturer,
                         cpuSpec: apiResponse.cpuSpec,
@@ -89,6 +92,26 @@ export default function ProductDetail() {
         }
     }, [id, token, setToken]);
 
+    // 15초 이상 체류 시 로그 전송
+    useEffect(() => {
+        if (!productData || !token || longViewLogged.current) return;
+
+        const timer = setTimeout(() => {
+            const baseSpecId = productData.baseSpec.baseSpecId;
+            if (baseSpecId) {
+                myAxios(token, setToken).post('/logs/action', {
+                    baseSpecId: baseSpecId,
+                    actionType: 'LONG_VIEW'
+                }).catch(err => console.error("LONG_VIEW_COUNT 로그 전송 실패:", err));
+                
+                longViewLogged.current = true; // 로그가 한 번만 전송되도록 플래그 설정
+            }
+        }, 15000); // 15초
+
+        // 컴포넌트 언마운트 시 타이머 정리
+        return () => clearTimeout(timer);
+    }, [productData, token, setToken]);
+
     const addToCart = async () => {
         if (!token) {
             alert("로그인이 필요합니다.");
@@ -106,6 +129,18 @@ export default function ProductDetail() {
             });
     };
 
+    const handleImageClick = () => {
+        setIsImageModalOpen(true); // 모달 열기
+        // 이미지 클릭 로그 전송
+        const baseSpecId = productData.baseSpec.baseSpecId;
+        if (token && baseSpecId) {
+            myAxios(token, setToken).post('/logs/action', {
+                baseSpecId: baseSpecId,
+                actionType: 'IMAGE_VIEW'
+            }).catch(err => console.error("IMAGE_VIEW_COUNT 로그 전송 실패:", err));
+        }
+    };
+
     if (!productData) {
         return <Container className='mt-4'><div>상품 정보를 불러오는 중입니다...</div></Container>;
     }
@@ -116,8 +151,8 @@ export default function ProductDetail() {
         <Container className='mt-4'>
             <h2 className='mb-4'>상품 상세 정보</h2>
             <Row>
-                <Col md="7">
-                    <img src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ width: '100%', borderRadius: '8px' }} />
+                <Col md="7" style={{ cursor: 'pointer' }} onClick={handleImageClick}>
+                    <img src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ width: '100%', borderRadius: '8px' }} title="클릭해서 크게 보기" />
                     <h3 className='mt-4'>판매자 상품 상세 설명</h3>
                     <Card className='p-3'>{product.description}</Card>
                 </Col>
@@ -211,6 +246,12 @@ export default function ProductDetail() {
                     ))}
                 </Row>
             </section>
+
+            {/* 이미지 확대 모달 */}
+            <Modal isOpen={isImageModalOpen} toggle={() => setIsImageModalOpen(false)} size="lg" centered>
+                <ModalHeader toggle={() => setIsImageModalOpen(false)}>{product.productName}</ModalHeader>
+                <ModalBody className="text-center"><img src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ maxWidth: '100%', maxHeight: '80vh' }} /></ModalBody>
+            </Modal>
         </Container>
     );
 }
