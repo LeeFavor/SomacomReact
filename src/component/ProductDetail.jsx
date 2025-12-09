@@ -135,7 +135,20 @@ export default function ProductDetail() {
                         </Col>
                     </Row>
                     <Button color="secondary" block className='mb-2' onClick={addToCart}>장바구니 담기</Button>
-                    <Button color="primary" block>즉시 구매</Button>
+                    <Button color="primary" block onClick={() => {
+                        if (!token) {
+                            alert("로그인이 필요합니다.");
+                            return navigate('/login');
+                        }
+                        const itemToOrder = {
+                            productId: product.productId,
+                            productName: product.productName,
+                            price: product.price,
+                            imageUrl: product.imageUrl,
+                            quantity: parseInt(quantity)
+                        };
+                        navigate('/order', { state: { items: [itemToOrder], price: itemToOrder.price * itemToOrder.quantity, type: 'instant' } });
+                    }}>즉시 구매</Button>
                 </Col>
             </Row>
 
