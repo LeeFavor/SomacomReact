@@ -128,13 +128,51 @@ export default function Mypage() {
                     </Table>
                 )}
                 <div className="d-flex justify-content-center mt-4">
-                    <Pagination>
-                        {[...Array(pageInfo.totalPages || 0).keys()].map(i => (
-                            <PaginationItem key={i} active={i === pageInfo.number}>
-                                <Link to={`/mypage?page=${i}`} className="page-link">{i + 1}</Link>
-                            </PaginationItem>
-                        ))}
-                    </Pagination>
+                    {(() => {
+                        if (!pageInfo.totalPages) return null;
+
+                        const currentPage = pageInfo.number;
+                        const totalPages = pageInfo.totalPages;                        
+                        const pageRangeDisplayed = 10;
+                        let startPage = Math.max(0, currentPage - Math.floor(pageRangeDisplayed / 2));
+                        let endPage = Math.min(totalPages, startPage + pageRangeDisplayed);
+
+                        if (endPage - startPage < pageRangeDisplayed) {
+                            startPage = Math.max(0, endPage - pageRangeDisplayed);
+                        }
+
+                        const items = [];
+
+                        // 이전 페이지 그룹으로 이동
+                        if (currentPage > 0) {
+                            items.push(
+                                <PaginationItem key="prev-group">
+                                    <Link to={`/mypage?page=${Math.max(0, currentPage - pageRangeDisplayed)}`} className="page-link">«</Link>
+                                </PaginationItem>
+                            );
+                        }
+
+                        for (let i = startPage; i < endPage; i++) {
+                            items.push(
+                                <PaginationItem key={i} active={i === pageInfo.number}>
+                                    <Link to={`/mypage?page=${i}`} className="page-link">{i + 1}</Link>
+                                </PaginationItem>
+                            );
+                        }
+
+                        // 다음 페이지 그룹으로 이동
+                        if (currentPage < totalPages - 1) {
+                            items.push(
+                                <PaginationItem key="next-group">
+                                    <Link to={`/mypage?page=${Math.min(totalPages - 1, currentPage + pageRangeDisplayed)}`} className="page-link">
+                                        »
+                                    </Link>
+                                </PaginationItem>
+                            );
+                        }
+
+                        return <Pagination>{items}</Pagination>;
+                    })()}
                 </div>
             </section>
 

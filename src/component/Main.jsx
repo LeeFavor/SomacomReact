@@ -13,8 +13,8 @@ const ProductCard = ({ product }) => (
       <a href={`/products/${product.productId}`} className='text-decoration-none text-dark'>
         <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} />
         <CardBody>
-          <CardTitle tag="h5" style={{fontSize: '1rem', height: '40px'}}>{product.productName}</CardTitle>
-          <CardSubtitle tag="h6" className="mb-2 text-muted" style={{fontSize: '0.9rem'}}>{product.companyName}</CardSubtitle>
+          <CardTitle tag="h5" style={{ fontSize: '1rem', height: '40px' }}>{product.productName}</CardTitle>
+          <CardSubtitle tag="h6" className="mb-2 text-muted" style={{ fontSize: '0.9rem' }}>{product.companyName}</CardSubtitle>
           <CardText className='fw-bold fs-5 text-primary'>${product.price.toLocaleString()}</CardText>
         </CardBody>
       </a>
@@ -24,24 +24,24 @@ const ProductCard = ({ product }) => (
 
 // AI 추천 광고 상품 카드
 const AdProductCard = ({ product }) => (
-    <Col md="3" className="mb-4">
-      <Card className='h-100' style={{backgroundColor: '#fffbeb', borderColor: '#fde68a'}}>
-        <CardBody className='d-flex flex-column justify-content-center align-items-center text-center'>
-            <h5 style={{color: '#b45309'}}>✨ 회원님을 위한 맞춤 광고</h5>
-            <a href={`/products/${product.productId}`} className='text-decoration-none text-dark w-100 mt-2'>
-                <Card className='w-100'>
-                    <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{height: '150px', objectFit: 'cover'}}/>
-                    <CardBody className='p-2'>
-                        <CardTitle tag="h6" style={{fontSize: '0.9rem'}}>{product.productName}</CardTitle>
-                        <CardSubtitle tag="h6" className="mb-1 text-muted" style={{fontSize: '0.8rem'}}>{product.companyName}</CardSubtitle>
-                        <CardText className='fw-bold text-primary'>${product.price.toLocaleString()}</CardText>
-                    </CardBody>
-                </Card>
-            </a>
-        </CardBody>
-      </Card>
-    </Col>
-  );
+  <Col md="3" className="mb-4">
+    <Card className='h-100' style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
+      <CardBody className='d-flex flex-column justify-content-center align-items-center text-center'>
+        <h5 style={{ color: '#b45309' }}>✨ 회원님을 위한 맞춤 광고</h5>
+        <a href={`/products/${product.productId}`} className='text-decoration-none text-dark w-100 mt-2'>
+          <Card className='w-100'>
+            <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ height: '150px', objectFit: 'cover' }} />
+            <CardBody className='p-2'>
+              <CardTitle tag="h6" style={{ fontSize: '0.9rem' }}>{product.productName}</CardTitle>
+              <CardSubtitle tag="h6" className="mb-1 text-muted" style={{ fontSize: '0.8rem' }}>{product.companyName}</CardSubtitle>
+              <CardText className='fw-bold text-primary'>${product.price.toLocaleString()}</CardText>
+            </CardBody>
+          </Card>
+        </a>
+      </CardBody>
+    </Card>
+  </Col>
+);
 
 export default function Main() {
   const [popularProducts, setPopularProducts] = useState([]);
@@ -53,11 +53,10 @@ export default function Main() {
 
   useEffect(() => {
     // 1. 인기(랜덤) 상품 목록 조회
-    myAxios(token, setToken).get('/products/search', { params: { size: 8 } })
+    myAxios(token, setToken).get('/products/popular')
       .then(res => {
-        // 8개를 가져와서 섞은 후 4개만 선택
-        const shuffled = res.data.content.sort(() => 0.5 - Math.random());
-        setPopularProducts(shuffled.slice(0, 4));
+        // const shuffled = res.data.content.sort(() => 0.5 - Math.random());
+        setPopularProducts(res.data);
       })
       .catch(err => console.error("인기 상품 조회 실패:", err));
 
@@ -66,7 +65,7 @@ export default function Main() {
     //   .then(res => setCategories(res.data))
     //   .catch(err => console.error("카테고리 조회 실패:", err));
 
-    
+
     // 3. AI 추천 상품 조회 (로그인 상태일 때만)
     if (token) {
       const fetchRecommendations = async () => {
@@ -87,7 +86,7 @@ export default function Main() {
 
           // 두 결과를 합쳐서 상태 업데이트
           setRecommendedProducts([...personalProducts, ...compatProducts]);
-          console.log("111",recommendedProducts)
+          console.log("111", recommendedProducts)
         } catch (error) {
           console.error("AI 추천 상품 조회 실패:", error);
         }
@@ -106,7 +105,7 @@ export default function Main() {
       {/* 1. 히어로 배너 */}
       <Row>
         <Col>
-          <div className="p-5 mb-4 rounded-3 text-white" style={{background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)'}}>
+          <div className="p-5 mb-4 rounded-3 text-white" style={{ background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)' }}>
             <h2>나만의 PC, SOMACOM에서 완성하세요</h2>
             <p>AI가 추천하는 최적의 부품 조합을 만나보세요.</p>
           </div>
@@ -116,21 +115,21 @@ export default function Main() {
       {/* 2. 카테고리 네비게이션 */}
       <Row className='mb-4'>
         <Col>
-            <h4 style={{borderBottom: '2px solid #e5e7eb', paddingBottom: '10px'}}>카테고리</h4>
-            <Nav>
-                
-                <NavItem key="Motherboard"><NavLink href={`/search?category=Motherboard`} onClick={(e) => handleCategoryClick(e, "Motherboard")} className='btn btn-secondary me-2'>Motherboard</NavLink></NavItem>
-                <NavItem key="CPU"><NavLink href={`/search?category=CPU`} onClick={(e) => handleCategoryClick(e, "CPU")} className='btn btn-secondary me-2'>CPU</NavLink></NavItem>
-                <NavItem key="GPU"><NavLink href={`/search?category=GPU`} onClick={(e) => handleCategoryClick(e, "GPU")} className='btn btn-secondary me-2'>GPU</NavLink></NavItem>
-                <NavItem key="RAM"><NavLink href={`/search?category=RAM`} onClick={(e) => handleCategoryClick(e, "RAM")} className='btn btn-secondary me-2'>RAM</NavLink></NavItem>
-            </Nav>
+          <h4 style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>카테고리</h4>
+          <Nav>
+
+            <NavItem key="Motherboard"><NavLink href={`/search?category=Motherboard`} onClick={(e) => handleCategoryClick(e, "Motherboard")} className='btn btn-secondary me-2'>Motherboard</NavLink></NavItem>
+            <NavItem key="CPU"><NavLink href={`/search?category=CPU`} onClick={(e) => handleCategoryClick(e, "CPU")} className='btn btn-secondary me-2'>CPU</NavLink></NavItem>
+            <NavItem key="GPU"><NavLink href={`/search?category=GPU`} onClick={(e) => handleCategoryClick(e, "GPU")} className='btn btn-secondary me-2'>GPU</NavLink></NavItem>
+            <NavItem key="RAM"><NavLink href={`/search?category=RAM`} onClick={(e) => handleCategoryClick(e, "RAM")} className='btn btn-secondary me-2'>RAM</NavLink></NavItem>
+          </Nav>
         </Col>
       </Row>
 
       {/* 3. 인기 상품 섹션 */}
       <Row>
         <Col>
-          <h3 className="mb-3" style={{borderBottom: '2px solid #e5e7eb', paddingBottom: '10px'}}>🔥 지금 가장 인기있는 상품</h3>
+          <h3 className="mb-3" style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>🔥 지금 가장 인기있는 상품</h3>
         </Col>
       </Row>
       <Row>
@@ -138,17 +137,21 @@ export default function Main() {
       </Row>
 
       {/* 4. AI 추천 상품 섹션 */}
-      <Row className='mt-5'>
-        <Col>
-          <h3 className="mb-3" style={{borderBottom: '2px solid #e5e7eb', paddingBottom: '10px'}}>🚀 AI 추천! 회원님을 위한 상품</h3>
-        </Col>
-      </Row>
-      <Row>
-        {recommendedProducts.map(p =>
-            p.isAd ? <AdProductCard key={p.productId} product={p} /> : <ProductCard key={p.productId} product={p} />
-        )}
+      {token &&
+        <>
+          <Row className='mt-5'>
+            <Col>
+              <h3 className="mb-3" style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>🚀 AI 추천! 회원님을 위한 상품</h3>
+            </Col>
+          </Row>
+          <Row>
+            {recommendedProducts.map(p =>
+              p.isAd ? <AdProductCard key={p.productId} product={p} /> : <ProductCard key={p.productId} product={p} />
+            )}
 
-      </Row>
+          </Row>
+        </>
+      }
     </Container>
   );
 }

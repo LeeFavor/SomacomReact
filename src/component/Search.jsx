@@ -125,12 +125,46 @@ export default function Search() {
 
     const renderPagination = () => {
         if (!pageInfo.totalPages) return null;
+
+        const currentPage = pageInfo.number;
+        const totalPages = pageInfo.totalPages;        
+        const pageRangeDisplayed = 10;
+        let startPage = Math.max(0, currentPage - Math.floor(pageRangeDisplayed / 2));
+        let endPage = Math.min(totalPages, startPage + pageRangeDisplayed);
+
+        if (endPage - startPage < pageRangeDisplayed) {
+            startPage = Math.max(0, endPage - pageRangeDisplayed);
+        }
+
         const items = [];
-        for (let i = 0; i < pageInfo.totalPages; i++) {
+
+        // 이전 페이지 그룹으로 이동
+        if (currentPage > 0) {
             items.push(
-                <PaginationItem key={i} active={i === pageInfo.number}>
+                <PaginationItem key="prev-group">
+                    <Link to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams.entries()), page: Math.max(0, currentPage - pageRangeDisplayed) }).toString()}`} className="page-link">
+                        «
+                    </Link>
+                </PaginationItem>
+            );
+        }
+
+        for (let i = startPage; i < endPage; i++) {            
+            items.push(
+                <PaginationItem key={i} active={i === currentPage}>
                     <Link to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams.entries()), page: i }).toString()}`} className="page-link">
                         {i + 1}
+                    </Link>
+                </PaginationItem>
+            );
+        }
+
+        // 다음 페이지 그룹으로 이동
+        if (currentPage < totalPages - 1) {
+            items.push(
+                <PaginationItem key="next-group">
+                    <Link to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams.entries()), page: Math.min(totalPages - 1, currentPage + pageRangeDisplayed) }).toString()}`} className="page-link">
+                        »
                     </Link>
                 </PaginationItem>
             );
