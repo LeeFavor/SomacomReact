@@ -16,6 +16,13 @@ import Token from './component/Token'
 import Order from './component/Order'
 import PaymentSuccess from './component/PaymentSuccess'
 import OrderComplete from './component/OrderComplete'
+import AdminDashboard from './component/AdminDashboard'
+import AdminUserManagement from './component/AdminUserManagement'
+import AdminBaseSpecList from './component/AdminBaseSpecList'
+import AdminBaseSpecRequestList from './component/AdminBaseSpecRequestList'
+import AdminBaseSpecForm from './component/AdminBaseSpecForm' // [신규] 기반 모델 폼 임포트
+import AdminScheduler from './component/AdminScheduler'
+import AdminLogViewer from './component/AdminLogViewer'
 import { fcmTokenAtom, alarmsAtom } from './atoms'
 import { useSetAtom, useAtom } from 'jotai/react'
 import { useState, useEffect } from 'react'
@@ -50,6 +57,15 @@ function App() {
         <Route path="/search" element={<Search/>}/>
         <Route path="/mypage" element={<Mypage/>}/>
         <Route path='/token' element={<Token/>}/>
+        {/* [신규] 관리자 페이지 라우트 */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUserManagement />} />
+        <Route path="/admin/parts" element={<AdminBaseSpecList />} />
+        <Route path="/admin/parts/new" element={<AdminBaseSpecForm />} /> {/* 등록 */}
+        <Route path="/admin/parts/edit/:baseSpecId" element={<AdminBaseSpecForm />} /> {/* 수정 */}
+        <Route path="/admin/requests" element={<AdminBaseSpecRequestList />} />
+        <Route path="/admin/scheduler" element={<AdminScheduler />} />
+        <Route path="/admin/logs" element={<AdminLogViewer />} />
       </Routes>
     </>
   )
