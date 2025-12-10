@@ -34,6 +34,8 @@ export const myAxios = (token, setToken) => {
 
                         if (user && user.role === 'ADMIN') {
                             window.location.href = `${reactUrl}/login-admin`;
+                        } else if (user && user.role === 'SELLER') {
+                            window.location.href = `${reactUrl}/login-seller`;
                         } else {
                             window.location.href = `${reactUrl}/login`;
                         }

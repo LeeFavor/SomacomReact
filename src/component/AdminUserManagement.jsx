@@ -64,20 +64,20 @@ export default function AdminUserManagement() {
     };
 
     const renderPagination = () => {
-        if (!pageInfo.totalPages) return null;
+        if (!pageInfo.totalPages || pageInfo.totalPages <= 1) return null;
 
         const currentPage = pageInfo.number;
         const totalPages = pageInfo.totalPages;
         const pageRangeDisplayed = 10;
         let startPage = Math.max(0, currentPage - Math.floor(pageRangeDisplayed / 2));
         let endPage = Math.min(totalPages, startPage + pageRangeDisplayed);
-
+    
         if (endPage - startPage < pageRangeDisplayed) {
             startPage = Math.max(0, endPage - pageRangeDisplayed);
         }
-
+    
         const items = [];
-
+    
         // 이전 페이지 그룹
         if (currentPage > 0) {
             items.push(
@@ -86,7 +86,7 @@ export default function AdminUserManagement() {
                 </PaginationItem>
             );
         }
-
+    
         for (let i = startPage; i < endPage; i++) {
             items.push(
                 <PaginationItem key={i} active={i === currentPage}>
@@ -94,7 +94,7 @@ export default function AdminUserManagement() {
                 </PaginationItem>
             );
         }
-
+    
         // 다음 페이지 그룹
         if (currentPage < totalPages - 1) {
             items.push(
