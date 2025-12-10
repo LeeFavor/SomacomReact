@@ -15,10 +15,23 @@ export default function Header({ alarms }) {
     const searchContainerRef = useRef(null);
 
     const logout = () => {
-        setUser(initUser)
-        setToken(null);
-        navigate('/'); // 로그아웃 후 메인 페이지로 이동
-    }
+        const lastRole = user.role; // [수정] 로그아웃 전, 일반 변수에 현재 역할 저장
+
+        // 1. 먼저 세션 스토리지의 상태를 모두 지웁니다.
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+
+        // 2. 역할에 따라 이동할 페이지를 결정합니다.
+        let destination = '/login'; // 기본값
+        if (lastRole === 'ADMIN') {
+            destination = '/login-admin';
+        } else if (lastRole === 'SELLER') {
+            destination = '/login-seller';
+        }
+
+        // 3. 해당 페이지로 이동하면서 애플리케이션을 완전히 새로고침합니다.
+        window.location.href = destination;
+    };
 
     // Debounce를 위한 useEffect
     useEffect(() => {
@@ -80,10 +93,21 @@ export default function Header({ alarms }) {
 
     return (
         <>
-            <Navbar color='light' light expand="md" className='d-flex justify-content-between px-4'>
-                <NavbarBrand href="/" className='fw-bold' style={{color: '#2563eb', fontSize: '1.8em'}}>
-                    SOMACOM
-                </NavbarBrand>
+            <Navbar color='light' light expand="md" className='d-flex justify-content-between px-4'> {(() => {
+                    let homePath = "/";
+                    if (user && user.role) {
+                        if (user.role === 'ADMIN') {
+                            homePath = "/admin";
+                        } else if (user.role === 'SELLER') {
+                            homePath = "/seller-center";
+                        }
+                    }
+                    return (
+                        <NavbarBrand href={homePath} className='fw-bold' style={{color: '#2563eb', fontSize: '1.8em'}}>
+                            SOMACOM
+                        </NavbarBrand>
+                    );
+                })()}
 
                 <div ref={searchContainerRef} style={{ position: 'relative', width: '350px' }}>
                     <Form className='d-flex' onSubmit={handleSearch}>
@@ -109,13 +133,18 @@ export default function Header({ alarms }) {
                     {user.username ? (
                         <>
                             <NavbarText className='fw-bold'>{user.username} 님</NavbarText>
-                            <NavItem><NavLink href="/mypage">내 정보</NavLink></NavItem>
+                            {/* [수정] 관리자가 아닐 때만 '내 정보' 표시 */}
+                            {user.role !== 'ADMIN' && user.role !== 'SELLER' && (
+                                <NavItem><NavLink href="/mypage">내 정보</NavLink></NavItem>
+                            )}
                             <NavItem><NavLink href="#" onClick={logout}>로그아웃</NavLink></NavItem>
-                            <NavItem><NavLink href="/cart">장바구니</NavLink></NavItem>
-                            {user.roles?.includes('ROLE_SELLER') && (
+                            {/* [수정] 어드민/셀러가 아닐 때만 장바구니 표시 */}
+                            {user.role !== 'ADMIN' && user.role !== 'SELLER' && (
+                                <NavItem><NavLink href="/cart">장바구니</NavLink></NavItem>
+                            )} {user.role === 'SELLER' && (
                                 <NavItem><NavLink href="/seller-center">판매자 센터</NavLink></NavItem>
                             )}
-                            {user.roles?.includes('ROLE_ADMIN') && (
+                            {user.role === 'ADMIN' && (
                                 <NavItem><NavLink href="/admin">관리자 페이지</NavLink></NavItem>
                             )}
                         </>
