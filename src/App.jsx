@@ -22,6 +22,10 @@ import AdminBaseSpecList from './component/AdminBaseSpecList'
 import AdminBaseSpecRequestList from './component/AdminBaseSpecRequestList'
 import AdminBaseSpecForm from './component/AdminBaseSpecForm' // [신규] 기반 모델 폼 임포트
 import AdminScheduler from './component/AdminScheduler'
+import SellerCenter from './component/SellerCenter' // [신규] 판매자 센터 임포트
+import SellerOrderManagement from './component/SellerOrderManagement' // [신규] 판매자 주문관리 임포트
+import SellerProductForm from './component/SellerProductForm' // [신규] 판매자 상품폼 임포트
+import SellerBaseSpecRequest from './component/SellerBaseSpecRequest'; // [신규] 판매자 모델요청 임포트
 import AdminLogViewer from './component/AdminLogViewer'
 import { fcmTokenAtom, alarmsAtom } from './atoms'
 import { useSetAtom, useAtom } from 'jotai/react'
@@ -66,6 +70,12 @@ function App() {
         <Route path="/admin/requests" element={<AdminBaseSpecRequestList />} />
         <Route path="/admin/scheduler" element={<AdminScheduler />} />
         <Route path="/admin/logs" element={<AdminLogViewer />} />
+        {/* [신규] 판매자 페이지 라우트 */}
+        <Route path="/seller-center" element={<SellerCenter />} />
+        <Route path="/seller/orders" element={<SellerOrderManagement />} />
+        <Route path="/seller/products/new" element={<SellerProductForm />} />
+        <Route path="/seller/products/edit/:productId" element={<SellerProductForm />} />
+        <Route path="/seller/base-spec-request" element={<SellerBaseSpecRequest />} />
       </Routes>
     </>
   )

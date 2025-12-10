@@ -81,6 +81,8 @@ export default function AdminBaseSpecForm() {
     const [specDetails, setSpecDetails] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [requestId, setRequestId] = useState(null);
+
 
     const token = useAtomValue(tokenAtom);
     const setToken = useSetAtom(tokenAtom);
@@ -106,9 +108,19 @@ export default function AdminBaseSpecForm() {
             // 등록 모드일 때, URL 파라미터로 초기값 설정 (모델 등록 요청 처리)
             const modelName = searchParams.get('modelName');
             const category = searchParams.get('category');
+            const manufacturer = searchParams.get('manufacturer');
+            const reqId = searchParams.get('requestId');
+            if (manufacturer) setBaseInfo(prev => ({ ...prev, manufacturer: manufacturer }));
             if (modelName) setBaseInfo(prev => ({ ...prev, name: modelName }));
             if (category) setBaseInfo(prev => ({ ...prev, category: category }));
+            if (reqId){
+                // setBaseInfo(prev => ({ ...prev, requestId: reqId }));
+                setRequestId(reqId);
+            } 
+            
         }
+ 
+        
     }, [baseSpecId, isEditMode, searchParams, token, setToken]);
 
     const handleBaseInfoChange = (e) => {
@@ -161,7 +173,22 @@ export default function AdminBaseSpecForm() {
 
         apiCall.then(() => {
             alert(`기반 모델이 성공적으로 ${isEditMode ? '수정' : '등록'}되었습니다.`);
-            navigate('/admin/parts');
+            // 판매자 요청을 통해 등록된 경우, 해당 요청을 '승인' 처리
+            if (requestId) {
+                myAxios(token, setToken).put(`/admin/base-spec-requests/${requestId}`, { status: 'APPROVED', adminNotes: '등록 완료' })
+                    .then(() => {
+                        console.log(`Request ID ${requestId} has been approved.`);
+                        // 요청 목록 페이지로 리디렉션
+                        setTimeout(() => navigate('/admin/requests'), 2000);
+                    })
+                    .catch(err => {
+                        console.error(`Failed to approve request ID ${requestId}:`, err);
+                        // 실패하더라도 기반 모델 목록 페이지로는 이동
+                        setTimeout(() => navigate('/admin/parts'), 2000);
+                    });
+            } else {
+                setTimeout(() => navigate('/admin/parts'), 2000);
+            }
         }).catch(err => {
             alert(err.response?.data?.message || "처리 중 오류가 발생했습니다.");
         });

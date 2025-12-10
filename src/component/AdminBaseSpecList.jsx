@@ -155,7 +155,9 @@ export default function AdminBaseSpecList() {
 
         // 다음 페이지 그룹
         if (currentPage < totalPages - 1) {
-            items.push(<PaginationItem key="next-group"><Link to={`?${new URLSearchParams({ ...currentParams, page: Math.min(totalPages - 1, currentPage + pageRangeDisplayed) }).toString()}`} className="page-link">»</Link></PaginationItem>);
+            items.push(<PaginationItem key="next-group">
+                <Link to={`?${new URLSearchParams({ ...currentParams, page: Math.min(totalPages - 1, currentPage + pageRangeDisplayed) }).toString()}`} className="page-link">»</Link>
+            </PaginationItem>);
         }
         return <Pagination>{items}</Pagination>;
     };
@@ -204,7 +206,8 @@ export default function AdminBaseSpecList() {
                                 <td>{spec.name}</td>
                                 <td>{spec.category}</td>
                                 <td><Button color="warning" size="sm" className='me-2' onClick={() => navigate(`/admin/parts/edit/${spec.id}`)}>수정</Button>
-                                <Button color="danger" size="sm" onClick={() => handleDelete(spec.id)}>삭제</Button></td>
+                                {/* <Button color="danger" size="sm" onClick={() => handleDelete(spec.id)}>삭제</Button> */}
+                                </td>
                             </tr>
                         )) : <tr><td colSpan="4" className="text-center">해당하는 기반 모델이 없습니다.</td></tr>}
                     </tbody>
