@@ -1,12 +1,12 @@
 import axios from "axios";
-export const baseUrl = "http://localhost:8080/api";
+export const baseUrl = "http://3.106.195.135:8080/api";
 export const imageUrl = baseUrl + "/files/images/";
-export const reactUrl = "http://localhost:5173";
+export const reactUrl = "http://3.26.244.183";
 
 export const myAxios = (token, setToken) => {
     let instance = axios.create({
         baseURL : baseUrl,
-        timeout:5000,
+        timeout:7000,
     })
 
     instance.interceptors.response.use(  
