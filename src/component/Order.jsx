@@ -155,7 +155,7 @@ export default function Order() {
                             <Label for="shippingPostcode">주소:</Label>
                             <div className='d-flex gap-2'>
                                 <Input type="text" id="shippingPostcode" name="shippingPostcode" value={shippingInfo.shippingPostcode} placeholder='우편번호' readOnly required />
-                                <Button type="button" onClick={handleAddressSearch}>주소검색</Button>
+                                <Button type="button" onClick={handleAddressSearch} style={{ whiteSpace: 'nowrap' }}>주소검색</Button>
                             </div>
                         </FormGroup>
                         <FormGroup>
