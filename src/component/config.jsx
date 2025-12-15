@@ -1,7 +1,7 @@
 import axios from "axios";
-export const baseUrl = "http://3.107.113.16:8080/api";
+export const baseUrl = "http://3.106.183.168:8080/api";
 export const imageUrl = baseUrl + "/files/images/";
-export const reactUrl = "http://54.252.154.217";
+export const reactUrl = "http://3.106.128.113";
 
 export const myAxios = (token, setToken) => {
     let instance = axios.create({

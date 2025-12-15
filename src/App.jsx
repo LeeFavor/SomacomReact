@@ -27,6 +27,7 @@ import SellerOrderManagement from './component/SellerOrderManagement' // [신규
 import SellerProductForm from './component/SellerProductForm' // [신규] 판매자 상품폼 임포트
 import SellerBaseSpecRequest from './component/SellerBaseSpecRequest'; // [신규] 판매자 모델요청 임포트
 import AdminLogViewer from './component/AdminLogViewer'
+import GeminiChat from './GeminiChat'
 import { fcmTokenAtom, alarmsAtom } from './atoms'
 import { useSetAtom, useAtom } from 'jotai/react'
 import { useState, useEffect } from 'react'
@@ -77,6 +78,7 @@ function App() {
         <Route path="/seller/products/edit/:productId" element={<SellerProductForm />} />
         <Route path="/seller/base-spec-request" element={<SellerBaseSpecRequest />} />
       </Routes>
+      <GeminiChat />
     </>
   )
 }
