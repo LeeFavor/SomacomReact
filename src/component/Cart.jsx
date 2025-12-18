@@ -49,7 +49,7 @@ export default function Cart() {
 
                 // 조건에 맞으면 AI 추천 광고 상품을 가져옵니다.
                 if (cartData && cartData.items.length >= 2 && cartData.compatibilityStatus === 'SUCCESS') {
-                    myAxios(token, setToken).get('/recommendations/personal', { params: { count: 1 } })
+                    myAxios(token, setToken).get('/recommendations/personal', { params: { count: 1, eventType: 'shopping-cart-page-view' } })
                         .then(recRes => {
                             if (recRes.data && recRes.data.length > 0) {
                                 setRecommendedProduct(recRes.data[0]);
@@ -215,16 +215,22 @@ export default function Cart() {
     return (
         <Container className='mt-4'>
             <h2 className='mb-4'>가상 견적 (장바구니)</h2>
-            <Alert color={compatibilityColor}>
-                <h4 className='alert-heading'>{cart.compatibilityStatus}</h4>
-                {cart.compatibilityReasonCode}
-            </Alert>
+            {cart.compatibilityStatus && (
+                <Alert color={compatibilityColor}>
+                    <h4 className='alert-heading'>{cart.compatibilityStatus}</h4>
+                    {cart.compatibilityReasonCode}
+                </Alert>
+            )}
             <Table>
                 <thead>
                     <tr><th><Input type="checkbox" checked={cart.items.length > 0 && checkedItems.size === cart.items.length} onChange={handleCheckAll} /></th><th colSpan="2">상품정보</th><th>판매가</th><th>수량</th><th>합계</th></tr>
                 </thead>
                 <tbody>
-                    {cart.items.map((item, index) => (
+                    {cart.items.length === 0 ? (
+                        <tr>
+                            <td colSpan="6" className="text-center p-5">장바구니에 담긴 상품이 없습니다.</td>
+                        </tr>
+                    ) : cart.items.map((item, index) => (
                         <>
                             <tr key={item.cartItemId}>
                                 <td style={{ verticalAlign: 'middle' }}><Input type="checkbox" checked={checkedItems.has(item.cartItemId)} onChange={() => handleCheckChange(item.cartItemId)} /></td>

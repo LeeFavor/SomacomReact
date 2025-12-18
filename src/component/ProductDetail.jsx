@@ -82,7 +82,7 @@ export default function ProductDetail() {
             });
         // 추천 상품 조회 (로그인 시)
         if (token) {
-            myAxios(token, setToken).get('/recommendations/personal', { params: { count: 4 } })
+            myAxios(token, setToken).get('/recommendations/personal', { params: { count: 4, eventType: 'detail-page-view' } })
                 .then(res => {
                     setRecommendations(res.data);
                 })
