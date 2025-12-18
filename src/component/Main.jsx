@@ -11,7 +11,7 @@ const ProductCard = ({ product }) => (
     <Card className='h-100'>
       {/* API 응답에 맞춰 productId, imageUrl, productName, companyName, price 사용 */}
       <a href={`/products/${product.productId}`} className='text-decoration-none text-dark'>
-        <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} />
+        <CardImg top width="100%" height="300px" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} />
         <CardBody>
           <CardTitle tag="h5" style={{ fontSize: '1rem', height: '40px' }}>{product.productName}</CardTitle>
           <CardSubtitle tag="h6" className="mb-2 text-muted" style={{ fontSize: '0.9rem' }}>{product.companyName}</CardSubtitle>
@@ -70,11 +70,21 @@ export default function Main() {
     if (token) {
       const fetchRecommendations = async () => {
         try {
-          // AI 개인화 추천 1개
+          // AI 개인화 추천 3개
           const personalRecPromise = myAxios(token, setToken).get('/recommendations/personal', { params: { count: 1 } });
-          console.log("111", personalRecPromise)
+          // console.log("111", personalRecPromise)
           // 장바구니 호환성 기반 추천 3개
-          const compatRecPromise = myAxios(token, setToken).get('/products/search', { params: { compatFilter: true, size: 3 } });
+          const compatRecPromise = myAxios(token, setToken).get('/products/search', { params: { compatFilter: true, size: 21 } })
+            .then(res => {
+              const allProducts = res.data.content;
+              if (!allProducts || allProducts.length === 0) {
+                return { data: { content: [] } };
+              }
+              const len = allProducts.length;
+              const indices = new Set([0, Math.floor(len * 0.5), len - 1]);
+              const finalProducts = Array.from(indices).map(i => allProducts[i]).filter(Boolean);
+              return { data: { content: finalProducts } };
+            });
           console.log(compatRecPromise)
 
           const [personalRes, compatRes] = await Promise.all([personalRecPromise, compatRecPromise]);
@@ -86,7 +96,7 @@ export default function Main() {
 
           // 두 결과를 합쳐서 상태 업데이트
           setRecommendedProducts([...personalProducts, ...compatProducts]);
-          console.log("111", recommendedProducts)
+          // console.log("111", recommendedProducts)
         } catch (error) {
           console.error("AI 추천 상품 조회 실패:", error);
         }

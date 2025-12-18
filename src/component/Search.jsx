@@ -20,6 +20,26 @@ const ProductCard = ({ product }) => (
     </Col>
 );
 
+const AdProductCard = ({ product }) => (
+    <Col md="4" className="mb-4">
+        <Card className='h-100' style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
+            <CardBody className='d-flex flex-column justify-content-center align-items-center text-center'>
+                <h5 style={{ color: '#b45309' }}>✨ 회원님을 위한 맞춤 광고</h5>
+                <a href={`/products/${product.productId}`} className='text-decoration-none text-dark w-100 mt-2'>
+                    <Card className='w-100'>
+                        <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ height: '150px', objectFit: 'cover' }} />
+                        <CardBody className='p-2'>
+                            <CardTitle tag="h6" style={{ fontSize: '0.9rem' }}>{product.productName}</CardTitle>
+                            <CardSubtitle tag="h6" className="mb-1 text-muted" style={{ fontSize: '0.8rem' }}>{product.companyName}</CardSubtitle>
+                            <CardText className='fw-bold text-primary'>${product.price?.toLocaleString()}</CardText>
+                        </CardBody>
+                    </Card>
+                </a>
+            </CardBody>
+        </Card>
+    </Col>
+);
+
 export default function Search() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [products, setProducts] = useState([]);
@@ -66,28 +86,47 @@ export default function Search() {
         }
 
         // 2. 검색 결과 가져오기
-        const params = Object.fromEntries(searchParams.entries());
-        myAxios(token, setToken).get('/products/search', { params })
-            .then(res => {
-                setProducts(res.data.content);
+        const fetchSearchAndAds = async () => {
+            const params = Object.fromEntries(searchParams.entries());
+            try {
+                const res = await myAxios(token, setToken).get('/products/search', { params });
+                let content = res.data.content || [];
+
                 setPageInfo({
                     totalPages: res.data.totalPages,
                     number: res.data.number,
                 });
-            })
-            .catch(err => {
+
+                // 검색 결과가 있고 토큰이 있으면 광고 삽입 시도
+                if (token && content.length > 0) {
+                    try {
+                        const adRes = await myAxios(token, setToken).get('/recommendations/personal', { params: { count: 1 } });
+                        if (adRes.data && adRes.data.length > 0) {
+                            const adProduct = { ...adRes.data[0].product, isAd: true };
+                            const insertIndex = Math.floor(content.length / 2);
+                            content.splice(insertIndex, 0, adProduct);
+                        }
+                    } catch (e) { console.error("광고 로드 실패", e); }
+                }
+                setProducts(content);
+            } catch (err) {
                 console.error("상품 검색 실패:", err);
                 setProducts([]);
-            })
-            .finally(() => setLoading(false));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSearchAndAds();
 
     }, [searchParams, token, setToken]);
 
     const handleFilterChange = (group, value) => {
+        const beforeChecked = selectedFilters[group] === value;
         const newFilters = { ...selectedFilters };
 
         // 이미 선택된 라디오 버튼을 다시 클릭하면 선택 해제, 아니면 값 설정
-        if (newFilters[group] === value) {
+        if (beforeChecked) {
             delete newFilters[group];
         } else {
             newFilters[group] = value;
@@ -200,7 +239,8 @@ export default function Search() {
                                                 type="radio"
                                                 name={group} // 같은 그룹 내의 라디오 버튼들은 동일한 name을 가져야 함
                                                 checked={selectedFilters[group] === option}
-                                                onChange={() => handleFilterChange(group, option)}
+                                                onClick={() => handleFilterChange(group, option)}
+                                                onChange={() => {}}
                                             />
                                             {option}
                                         </Label>
@@ -223,7 +263,9 @@ export default function Search() {
                         <>
                             {products.length > 0 ? (
                                 <Row>
-                                    {products.map(p => <ProductCard key={p.productId} product={p} />)}
+                                    {products.map(p => 
+                                        p.isAd ? <AdProductCard key={`ad-${p.productId}`} product={p} /> : <ProductCard key={p.productId} product={p} />
+                                    )}
                                 </Row>
                             ) : (
                                 <div className="text-center p-5">

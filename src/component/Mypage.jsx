@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, FormGroup, Label, Input, Button, Table, Pagination, PaginationItem, PaginationLink, Spinner, Alert } from 'reactstrap';
+import { Container, Row, Col, Card, Form, FormGroup, Label, Input, Button, Table, Pagination, PaginationItem, PaginationLink, Spinner, Alert, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useAtom, useSetAtom } from 'jotai';
 import { userAtom, tokenAtom } from '../atoms';
 import { myAxios } from './config';
@@ -22,6 +22,23 @@ export default function Mypage() {
 
     const [searchParams] = useSearchParams();
     const page = searchParams.get('page') || 0;
+
+    const [modal, setModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+
+    const toggleModal = () => setModal(!modal);
+
+    const handleOrderClick = (orderId) => {
+        myAxios(token, setToken).get(`/orders/${orderId}`)
+            .then(res => {
+                setSelectedOrder(res.data);
+                setModal(true);
+            })
+            .catch(err => {
+                console.error("주문 상세 조회 실패:", err);
+                alert("주문 상세 정보를 불러오는데 실패했습니다.");
+            });
+    };
 
     // 비밀번호 확인 핸들러
     const handleConfirmPassword = (e) => {
@@ -112,7 +129,7 @@ export default function Mypage() {
                         <tbody>
                             {orders && orders.length > 0 ? ( // 1. 조건부 렌더링 로직 개선
                                 orders.map(order => ( // 2. 불필요한 중괄호 제거
-                                <tr key={order.orderId}>
+                                <tr key={order.orderId} onClick={() => handleOrderClick(order.orderId)} style={{ cursor: 'pointer' }}>
                                     <td>{order.orderId}</td>
                                     <td>{new Date(order.orderedAt).toLocaleDateString()}</td>
                                     <td>{order.representativeProductName}</td>
@@ -175,6 +192,53 @@ export default function Mypage() {
                     })()}
                 </div>
             </section>
+
+            <Modal isOpen={modal} toggle={toggleModal} size="lg">
+                <ModalHeader toggle={toggleModal}>주문 상세 정보</ModalHeader>
+                <ModalBody>
+                    {selectedOrder && (
+                        <>
+                            <h5>주문 정보</h5>
+                            <Table borderless size="sm">
+                                <tbody>
+                                    <tr><th style={{ width: '120px' }}>주문번호</th><td>{selectedOrder.orderId}</td></tr>
+                                    <tr><th>주문일시</th><td>{new Date(selectedOrder.orderedAt).toLocaleString()}</td></tr>
+                                    <tr><th>상태</th><td>{selectedOrder.status}</td></tr>
+                                    <tr><th>총 결제금액</th><td>${selectedOrder.totalPrice?.toLocaleString()}</td></tr>
+                                </tbody>
+                            </Table>
+                            <hr />
+                            <h5>배송지 정보</h5>
+                            <Table borderless size="sm">
+                                <tbody>
+                                    <tr><th style={{ width: '120px' }}>수령인</th><td>{selectedOrder.recipientName}</td></tr>
+                                    <tr><th>주소</th><td>({selectedOrder.shippingPostcode}) {selectedOrder.shippingAddress}</td></tr>
+                                </tbody>
+                            </Table>
+                            <hr />
+                            <h5>주문 상품</h5>
+                            <Table striped>
+                                <thead>
+                                    <tr><th>상품명</th><th>가격</th><th>수량</th><th>합계</th></tr>
+                                </thead>
+                                <tbody>
+                                    {selectedOrder.orderItems && selectedOrder.orderItems.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td>{item.productName}</td>
+                                            <td>${item.priceAtPurchase?.toLocaleString()}</td>
+                                            <td>{item.quantity}</td>
+                                            <td>${(item.priceAtPurchase * item.quantity)?.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={toggleModal}>닫기</Button>
+                </ModalFooter>
+            </Modal>
 
             <hr className='my-5' />
 
