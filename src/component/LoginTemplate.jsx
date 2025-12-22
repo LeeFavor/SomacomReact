@@ -24,6 +24,11 @@ export default function LoginTemplate({ title, role }) {
         e.preventDefault();
         myAxios(null, setToken).post(`/auth/login`, { username: email, password })
             .then(res => {
+                if (res.data && res.data.role === 'SELLER_PENDING') {
+                    alert("관리자 승인 대기 중인 계정입니다. 관리자의 처리를 기다려주세요.");
+                    setToken(null);
+                    return;
+                }
                 // 로그인 응답 본문에 role이 있는지, 그리고 그 role이 기대하는 role과 맞는지 확인
                 // 백엔드 응답: { role: "SELLER" }, 프론트엔드 기대값: "ROLE_SELLER"
                 if (res.data && res.data.role && role === `ROLE_${res.data.role}`) {
