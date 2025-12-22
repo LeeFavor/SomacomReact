@@ -6,7 +6,7 @@ export const reactUrl = "http://3.25.232.248";
 export const myAxios = (token, setToken) => {
     let instance = axios.create({
         baseURL : baseUrl,
-        timeout:7000,
+        timeout:8000,
     })
 
     instance.interceptors.response.use(  

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, CardImg, CardBody, CardTitle, CardSubtitle, CardText, Button, Nav, NavItem, NavLink } from 'reactstrap';
+import { Container, Row, Col, Card, CardImg, CardBody, CardTitle, CardSubtitle, CardText, Button, Nav, NavItem, NavLink, Spinner } from 'reactstrap';
 import { myAxios, imageUrl } from './config';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { tokenAtom } from '../atoms';
@@ -51,6 +51,8 @@ const AdProductCard = ({ product }) => (
 export default function Main() {
   const [popularProducts, setPopularProducts] = useState([]);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [popularLoading, setPopularLoading] = useState(true);
+  const [recommendLoading, setRecommendLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const token = useAtomValue(tokenAtom);
   const setToken = useSetAtom(tokenAtom);
@@ -58,12 +60,14 @@ export default function Main() {
 
   useEffect(() => {
     // 1. 인기(랜덤) 상품 목록 조회
+    setPopularLoading(true);
     myAxios(token, setToken).get('/products/popular')
       .then(res => {
         // const shuffled = res.data.content.sort(() => 0.5 - Math.random());
         setPopularProducts(res.data);
       })
-      .catch(err => console.error("인기 상품 조회 실패:", err));
+      .catch(err => console.error("인기 상품 조회 실패:", err))
+      .finally(() => setPopularLoading(false));
 
     // // 2. 카테고리 목록 조회
     // myAxios(token, setToken).get('/products/categories')
@@ -73,6 +77,7 @@ export default function Main() {
 
     // 3. AI 추천 상품 조회 (로그인 상태일 때만)
     if (token) {
+      setRecommendLoading(true);
       const fetchRecommendations = async () => {
         try {
           // AI 개인화 추천 3개
@@ -104,6 +109,8 @@ export default function Main() {
           // console.log("111", recommendedProducts)
         } catch (error) {
           console.error("AI 추천 상품 조회 실패:", error);
+        } finally {
+          setRecommendLoading(false);
         }
       };
       fetchRecommendations();
@@ -147,9 +154,13 @@ export default function Main() {
           <h3 className="mb-3" style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>🔥 지금 가장 인기있는 상품</h3>
         </Col>
       </Row>
-      <Row>
-        {popularProducts.map(p => <ProductCard key={p.productId} product={p} />)}
-      </Row>
+      {popularLoading ? (
+        <div className="text-center p-5"><Spinner color="primary" /></div>
+      ) : (
+        <Row>
+          {popularProducts.map(p => <ProductCard key={p.productId} product={p} />)}
+        </Row>
+      )}
 
       {/* 4. AI 추천 상품 섹션 */}
       {token &&
@@ -159,12 +170,15 @@ export default function Main() {
               <h3 className="mb-3" style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '10px' }}>🚀 AI 추천! 회원님을 위한 상품</h3>
             </Col>
           </Row>
-          <Row>
-            {recommendedProducts.map(p =>
-              p.isAd ? <AdProductCard key={p.productId} product={p} /> : <ProductCard key={p.productId} product={p} />
-            )}
-
-          </Row>
+          {recommendLoading ? (
+            <div className="text-center p-5"><Spinner color="primary" /></div>
+          ) : (
+            <Row>
+              {recommendedProducts.map(p =>
+                p.isAd ? <AdProductCard key={p.productId} product={p} /> : <ProductCard key={p.productId} product={p} />
+              )}
+            </Row>
+          )}
         </>
       }
     </Container>
