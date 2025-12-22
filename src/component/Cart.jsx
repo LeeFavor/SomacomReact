@@ -214,7 +214,7 @@ export default function Cart() {
 
     return (
         <Container className='mt-4'>
-            <h2 className='mb-4'>가상 견적 (장바구니)</h2>
+            <h2 className='mb-4'>장바구니(가상견적)</h2>
             {cart.compatibilityStatus && (
                 <Alert color={compatibilityColor}>
                     <h4 className='alert-heading'>{cart.compatibilityStatus}</h4>
@@ -230,39 +230,45 @@ export default function Cart() {
                         <tr>
                             <td colSpan="6" className="text-center p-5">장바구니에 담긴 상품이 없습니다.</td>
                         </tr>
-                    ) : cart.items.map((item, index) => (
-                        <>
-                            <tr key={item.cartItemId}>
-                                <td style={{ verticalAlign: 'middle' }}><Input type="checkbox" checked={checkedItems.has(item.cartItemId)} onChange={() => handleCheckChange(item.cartItemId)} /></td>
-                                <td style={{ cursor: 'pointer' }} onClick={() => navigate(`/products/${item.productId}`)}><img src={`${imageUrl}${item.imageUrl}`} alt={item.productName} style={{ width: '100px', height: '100px', borderRadius: '6px' }} /></td>
-                                <td style={{ cursor: 'pointer', verticalAlign: 'middle' }} onClick={() => navigate(`/products/${item.productId}`)}>{item.productName}</td>
-                                <td>${item.price.toLocaleString()}</td>
-                                <td><Input type="number" value={quantityChanges[item.cartItemId] ?? item.quantity} onChange={(e) => handleQuantityChange(item.cartItemId, e.target.value)} style={{ width: '80px' }} min="1" /></td>
-                                <td>${(item.price * (quantityChanges[item.cartItemId] ?? item.quantity)).toLocaleString()}</td>
-                            </tr>
-                            {/* 광고 삽입 */}
-                            {recommendedProduct && index === adIndex && (
-                                <tr className="cart-ad-row" style={{ backgroundColor: '#fffbeb' }}>
-                                    <td></td>
-                                    <td colSpan="4" style={{ cursor: 'pointer' }} onClick={() => navigate(`/products/${recommendedProduct.product.productId}`)}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                            <img src={`${imageUrl}${recommendedProduct.product.imageUrl}`} alt={recommendedProduct.product.productName} style={{ width: '80px', height: '80px', borderRadius: '6px' }} />
-                                            <div>
-                                                <h6 style={{ margin: 0, color: '#b45309' }}>✨ 이 견적과 호환되는 상품을 추천해드려요!</h6>
-                                                <p style={{ margin: 0 }}>{recommendedProduct.product.productName}</p>
-                                            </div>
-                                        </div>
+                    ) : cart.items.map((item, index) => {
+                        const isMismatched = cart.compatibilityStatus === 'FAIL' && (item.part === cart.partA || item.part === cart.partB);
+                        return (
+                            <>
+                                <tr key={item.cartItemId} className={isMismatched ? 'table-danger' : ''}>
+                                    <td style={{ verticalAlign: 'middle' }}><Input type="checkbox" checked={checkedItems.has(item.cartItemId)} onChange={() => handleCheckChange(item.cartItemId)} /></td>
+                                    <td style={{ cursor: 'pointer' }} onClick={() => navigate(`/products/${item.productId}`)}><img src={`${imageUrl}${item.imageUrl}`} alt={item.productName} style={{ width: '100px', height: '100px', borderRadius: '6px' }} /></td>
+                                    <td style={{ cursor: 'pointer', verticalAlign: 'middle' }} onClick={() => navigate(`/products/${item.productId}`)}>
+                                        {item.productName}
+                                        {isMismatched && <div className="text-danger small fw-bold mt-1">! 호환성 문제 부품</div>}
                                     </td>
-                                    <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                                        <Button color="primary" size="sm" block onClick={() => navigate(`/products/${recommendedProduct.product.productId}`)}>
-                                            보러가기
-                                        </Button>
-                                        <Button color="secondary" size="sm" block className='mt-1' onClick={() => addToCart(recommendedProduct.product.productId)}>카트 담기</Button>
-                                    </td>
+                                    <td>${item.price.toLocaleString()}</td>
+                                    <td><Input type="number" value={quantityChanges[item.cartItemId] ?? item.quantity} onChange={(e) => handleQuantityChange(item.cartItemId, e.target.value)} style={{ width: '80px' }} min="1" /></td>
+                                    <td>${(item.price * (quantityChanges[item.cartItemId] ?? item.quantity)).toLocaleString()}</td>
                                 </tr>
-                            )}
-                        </>
-                    ))}
+                                {/* 광고 삽입 */}
+                                {recommendedProduct && index === adIndex && (
+                                    <tr className="cart-ad-row" style={{ backgroundColor: '#fffbeb' }}>
+                                        <td></td>
+                                        <td colSpan="4" style={{ cursor: 'pointer' }} onClick={() => navigate(`/products/${recommendedProduct.product.productId}`)}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                <img src={`${imageUrl}${recommendedProduct.product.imageUrl}`} alt={recommendedProduct.product.productName} style={{ width: '80px', height: '80px', borderRadius: '6px' }} />
+                                                <div>
+                                                    <h6 style={{ margin: 0, color: '#b45309' }}>✨ 이 견적과 호환되는 상품을 추천해드려요!</h6>
+                                                    <p style={{ margin: 0 }}>{recommendedProduct.product.productName}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                            <Button color="primary" size="sm" block onClick={() => navigate(`/products/${recommendedProduct.product.productId}`)}>
+                                                보러가기
+                                            </Button>
+                                            <Button color="secondary" size="sm" block className='mt-1' onClick={() => addToCart(recommendedProduct.product.productId)}>카트 담기</Button>
+                                        </td>
+                                    </tr>
+                                )}
+                            </>
+                        );
+                    })}
                 </tbody>
             </Table>
             <Row className='mt-4 align-items-center'>
