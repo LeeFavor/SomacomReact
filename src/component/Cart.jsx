@@ -56,9 +56,15 @@ export default function Cart() {
                                 // 1과 (아이템 개수 - 1) 사이의 랜덤 인덱스 생성
                                 const randomIndex = Math.floor(Math.random() * (cartData.items.length - 1)) + 1;
                                 setAdIndex(randomIndex);
+                            } else {
+                                setRecommendedProduct(null);
+                                setAdIndex(-1);
                             }
                         })
                         .catch(err => console.error("AI 추천 상품 조회 실패:", err));
+                } else {
+                    setRecommendedProduct(null);
+                    setAdIndex(-1);
                 }
 
                 // 호환되는 상품 목록을 가져옵니다.
