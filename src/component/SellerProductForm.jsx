@@ -121,7 +121,7 @@ export default function SellerProductForm() {
     };
 
     const handleSuggestionClick = (spec) => {
-        setProduct({ ...product, baseSpecId: spec.baseSpecId });
+        setProduct({ ...product, baseSpecId: spec.id });
         setBaseSpecName(spec.name);
         setBaseSpecQuery(spec.name);
         setShowSuggestions(false);
@@ -155,6 +155,7 @@ export default function SellerProductForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!isEditMode && !product.baseSpecId) {
+            // console.log(product)
             alert("기반 모델을 검색하여 선택해주세요.");
             return;
         }
@@ -206,7 +207,7 @@ export default function SellerProductForm() {
                             {showSuggestions && baseSpecSuggestions.length > 0 && (
                                 <ListGroup style={{ position: 'absolute', top: '100%', width: '100%', zIndex: 1000 }}>
                                     {baseSpecSuggestions.map(spec => (
-                                        <ListGroupItem key={spec.baseSpecId} action tag="button" type="button" onClick={() => handleSuggestionClick(spec)}>
+                                        <ListGroupItem key={spec.id} action tag="button" type="button" onClick={() => handleSuggestionClick(spec)}>
                                             {spec.name}
                                         </ListGroupItem>
                                     ))}
