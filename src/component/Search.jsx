@@ -5,8 +5,8 @@ import { myAxios, imageUrl } from './config';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { tokenAtom } from '../atoms';
 
-const ProductCard = ({ product }) => (
-    <Col md="4" className="mb-4">
+const ProductCard = ({ product, colSize }) => (
+    <Col md={colSize} className="mb-4">
         <Card className='h-100'>
             <a href={`/products/${product.productId}`} className='text-decoration-none text-dark'>
                 <CardImg top width="100%" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ height: '220px', objectFit: 'cover' }} />
@@ -20,8 +20,8 @@ const ProductCard = ({ product }) => (
     </Col>
 );
 
-const AdProductCard = ({ product }) => (
-    <Col md="4" className="mb-4">
+const AdProductCard = ({ product, colSize }) => (
+    <Col md={colSize} className="mb-4">
         <Card className='h-100' style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
             <CardBody className='d-flex flex-column justify-content-center align-items-center text-center'>
                 <h5 style={{ color: '#b45309' }}>✨ 회원님을 위한 맞춤 광고</h5>
@@ -212,13 +212,17 @@ export default function Search() {
         return <Pagination>{items}</Pagination>;
     };
 
+    const hasCategory = !!searchParams.get('category');
+    const cardColSize = hasCategory ? "4" : "3";
+
     return (
         <Container className='mt-4'>
-            <h2 className='mb-4'>"{searchParams.get('keyword') || searchParams.get('category') || '전체'}" 검색 결과</h2>
+            <h3 className='mb-4'>{searchParams.get('keyword') || searchParams.get('category') || '전체'} 검색 결과</h3>
             <Row>
                 {/* 필터 사이드바 */}
-                <Col md="3">
-                    <h3>필터</h3>
+                {
+                searchParams.get('category')
+                    &&(<Col md="3">
                     <Card body>
                         {token && (
                             <div className="mb-3">
@@ -241,7 +245,7 @@ export default function Search() {
                                                 checked={selectedFilters[group] === option}
                                                 onClick={() => handleFilterChange(group, option)}
                                                 onChange={() => {}}
-                                            />
+                                                />
                                             {option}
                                         </Label>
                                     </div>
@@ -251,9 +255,11 @@ export default function Search() {
                         <Button color="primary" block onClick={applyFilters}>필터 적용</Button>
                     </Card>
                 </Col>
+                )
 
+                }
                 {/* 검색 결과 */}
-                <Col md="9">
+                <Col md={hasCategory ? "9" : "12"}>
                     {loading ? (
                         <div className="text-center p-5">
                             <Spinner />
@@ -264,7 +270,7 @@ export default function Search() {
                             {products.length > 0 ? (
                                 <Row>
                                     {products.map(p => 
-                                        p.isAd ? <AdProductCard key={`ad-${p.productId}`} product={p} /> : <ProductCard key={p.productId} product={p} />
+                                        p.isAd ? <AdProductCard key={`ad-${p.productId}`} product={p} colSize={cardColSize} /> : <ProductCard key={p.productId} product={p} colSize={cardColSize} />
                                     )}
                                 </Row>
                             ) : (

@@ -11,13 +11,18 @@ const ProductCard = ({ product }) => (
     <Card className='h-100'>
       {/* API 응답에 맞춰 productId, imageUrl, productName, companyName, price 사용 */}
       <a href={`/products/${product.productId}`} className='text-decoration-none text-dark'>
-        <CardImg top width="100%" height="300px" src={`${imageUrl}${product.imageUrl}`} alt={product.productName} />
+        <CardImg top width="100%" style={{ height: '220px', objectFit: 'cover' }} src={`${imageUrl}${product.imageUrl}`} alt={product.productName} />
         <CardBody>
           <CardTitle tag="h5" style={{ fontSize: '1rem', height: '40px' }}>{product.productName}</CardTitle>
           <CardSubtitle tag="h6" className="mb-2 text-muted" style={{ fontSize: '0.9rem' }}>{product.companyName}</CardSubtitle>
           <CardText className='fw-bold fs-5 text-primary'>${product.price.toLocaleString()}</CardText>
         </CardBody>
       </a>
+      {product.baseSpecName && (
+        <div className="p-2 text-center border-top">
+          <a href={`/search?keyword=${product.baseSpecName}`} className="btn btn-sm btn-outline-primary w-100">동일 모델 검색</a>
+        </div>
+      )}
     </Card>
   </Col>
 );

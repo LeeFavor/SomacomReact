@@ -140,7 +140,7 @@ export default function Header({ alarms }) {
                             <NavItem><NavLink href="#" onClick={logout}>로그아웃</NavLink></NavItem>
                             {/* [수정] 어드민/셀러가 아닐 때만 장바구니 표시 */}
                             {user.role !== 'ADMIN' && user.role !== 'SELLER' && (
-                                <NavItem><NavLink href="/cart">장바구니</NavLink></NavItem>
+                                <NavItem><NavLink href="/cart">장바구니(가상견적)</NavLink></NavItem>
                             )} {user.role === 'SELLER' && (
                                 <NavItem><NavLink href="/seller-center">판매자 센터</NavLink></NavItem>
                             )}
