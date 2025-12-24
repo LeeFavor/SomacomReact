@@ -225,10 +225,18 @@ export default function ProductDetail() {
                 </Table>
             </section>
 
-            <hr className='my-5' />
 
             <section>
+                {
+                    recommendations.length > 0
+                    &&(
+                        <>
+                    <hr className='my-5' />
+                
                 <h3>함께 구매된 추천 상품</h3>
+                        </>
+                )
+                }
                 <Row>
                     {recommendations.map(rec => (
                         <Col md="3" key={rec.product.productId}>
