@@ -152,7 +152,9 @@ export default function ProductDetail() {
             <h2 className='mb-4'>상품 상세 정보</h2>
             <Row>
                 <Col md="7" style={{ cursor: 'pointer' }} onClick={handleImageClick}>
-                    <img src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ width: '100%', borderRadius: '8px' }} title="클릭해서 크게 보기" />
+                    <div style={{ backgroundColor: '#f8f9fa', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+                        <img src={`${imageUrl}${product.imageUrl}`} alt={product.productName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: '0'}} title="클릭해서 크게 보기" />
+                    </div>
                     <h3 className='mt-4'>판매자 상품 상세 설명</h3>
                     <Card className='p-3'>{product.description}</Card>
                 </Col>
